@@ -1,0 +1,17 @@
+{
+  "name": "portfolio-otp-bot",
+  "version": "1.0.0",
+  "description": "Telegram OTP Bot for Portfolio",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "firebase-admin": "^12.7.0",
+    "telegraf": "^4.16.3"
+  },
+  "engines": {
+    "node": ">=18 <21"
+  }
+}
