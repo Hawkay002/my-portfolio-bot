@@ -1,5 +1,5 @@
 const { Telegraf, Markup } = require('telegraf'); // Added Markup
-const admin = require('firebase-admin');
+const admin = require('firebase-admin'); 
 const express = require('express');
 
 // --- 1. CONFIGURATION ---
