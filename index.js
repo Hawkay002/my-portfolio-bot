@@ -5,7 +5,7 @@ const express = require('express');
 // --- 1. CONFIGURATION ---
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const SERVICE_ACCOUNT = process.env.FIREBASE_SERVICE_ACCOUNT;
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000; 
 
 // --- 2. DUMMY WEB SERVER ---
 const app = express();
