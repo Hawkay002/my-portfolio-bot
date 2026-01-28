@@ -1,24 +1,37 @@
-const { Telegraf, Markup } = require('telegraf'); // Added Markup
-const admin = require('firebase-admin'); 
+const { Telegraf, Markup } = require('telegraf');
+const admin = require('firebase-admin');
 const express = require('express');
+const path = require('path');
 
 // --- 1. CONFIGURATION ---
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const SERVICE_ACCOUNT = process.env.FIREBASE_SERVICE_ACCOUNT;
-const PORT = process.env.PORT || 3000; 
+const PORT = process.env.PORT || 3000;
 
-// --- 2. DUMMY WEB SERVER ---
+// --- 2. WEB SERVER (Privacy Policy + Uptime) ---
 const app = express();
+
+// A. Serve Static Files (Makes public/privacy.html accessible)
+// This is critical for the BotFather privacy link
+app.use(express.static(path.join(__dirname, 'public')));
+
+// B. Root Route (Fallback/Uptime Check)
 app.get('/', (req, res) => {
-  res.send('Bot is running securely.');
+  res.send('Bot is running securely. Go to /privacy.html to view the policy.');
 });
+
+// C. Direct Route (Optional backup if static fails)
+app.get('/privacy', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
+});
+
 app.listen(PORT, () => {
   console.log(`✅ Web Server running on port ${PORT}`);
 });
 
 // --- 3. FIREBASE INITIALIZATION ---
 if (!BOT_TOKEN || !SERVICE_ACCOUNT) {
-  console.error("❌ Missing Env Vars.");
+  console.error("❌ CRITICAL ERROR: Missing 'BOT_TOKEN' or 'FIREBASE_SERVICE_ACCOUNT' Env Vars.");
   process.exit(1);
 }
 
@@ -45,20 +58,20 @@ function generateOTP() {
 
 // A. HANDLE /start COMMAND
 bot.start(async (ctx) => {
-  const sessionId = ctx.startPayload; // Get session ID from link
+  const sessionId = ctx.startPayload; 
   const user = ctx.from;
 
   console.log(`📩 Start Request from: ${user.first_name} (ID: ${user.id})`);
 
-  // Scenario 1: Direct link without session ID
+  // Scenario 1: User opens bot directly (No session ID)
   if (!sessionId) {
     return ctx.reply("👋 Welcome! Please go to the website and click 'Verify via Telegram' to start.");
   }
 
   // Scenario 2: Valid Session - Ask for Contact
   try {
-    // We save a temporary "pending" record mapping Telegram ID -> Session ID
-    // This is needed because the 'contact' event doesn't carry the startPayload
+    // We must save the session ID temporarily because the 'contact' event 
+    // is a separate message and won't have the startPayload.
     await db.collection('pending_verifications').doc(user.id.toString()).set({
       session_id: sessionId,
       timestamp: admin.firestore.FieldValue.serverTimestamp()
@@ -91,7 +104,7 @@ bot.on('contact', async (ctx) => {
   }
 
   try {
-    // 1. Find the pending Session ID for this user
+    // 1. Retrieve the pending Session ID
     const pendingDocRef = db.collection('pending_verifications').doc(user.id.toString());
     const pendingDoc = await pendingDocRef.get();
 
@@ -102,21 +115,21 @@ bot.on('contact', async (ctx) => {
     const sessionId = pendingDoc.data().session_id;
     const otp = generateOTP();
 
-    // 2. Save Full Details to 'otp_sessions' (The main collection)
+    // 2. Save Full Details (Phone, Username, etc.) to Firestore
     await db.collection('otp_sessions').doc(sessionId).set({
       otp: otp,
       telegram_id: user.id,
-      telegram_name: [user.first_name, user.last_name].filter(Boolean).join(' '), // Full Name
-      telegram_username: user.username || 'No Username', // Capture Username
-      phone_number: contact.phone_number, // Capture Phone Number
+      telegram_name: [user.first_name, user.last_name].filter(Boolean).join(' '),
+      telegram_username: user.username || 'No Username',
+      phone_number: contact.phone_number,
       verified: false,
       created_at: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    // 3. Clean up the pending record
+    // 3. Clean up pending doc
     await pendingDocRef.delete();
 
-    // 4. Send Code to User & Remove Keyboard
+    // 4. Send OTP to User
     await ctx.reply(
       `✅ *Verification Successful*\n\nYour code is:\n\`${otp}\`\n\n(Tap to copy)`,
       { 
@@ -125,7 +138,7 @@ bot.on('contact', async (ctx) => {
       }
     );
 
-    console.log(`✅ Saved Data for User: ${user.username || user.id} | Phone: ${contact.phone_number}`);
+    console.log(`✅ Saved Data for User: ${user.username || user.id}`);
 
   } catch (error) {
     console.error("❌ Contact Error:", error);
@@ -135,7 +148,7 @@ bot.on('contact', async (ctx) => {
 
 // --- 6. LAUNCH ---
 bot.launch();
-console.log("🚀 Telegram Bot Started with Contact Request...");
+console.log("🚀 Telegram Bot Started...");
 
 // Graceful Stop
 process.once('SIGINT', () => bot.stop('SIGINT'));
