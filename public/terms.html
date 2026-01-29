@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Terms of Use | Shovith.dev</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #020617;
+            --card-bg: rgba(15, 23, 42, 0.8);
+            --accent-primary: #10b981;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            line-height: 1.8;
+        }
+
+        .container { max-width: 850px; width: 100%; padding: 80px 20px; }
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            padding: 60px;
+            border-radius: 32px;
+            border: 1px solid var(--border);
+            box-shadow: 0 40px 100px -20px rgba(0,0,0,0.7);
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            letter-spacing: -0.04em;
+            margin: 0;
+            background: linear-gradient(135deg, #fff 0%, #64748b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+
+        h2 { font-size: 0.9rem; color: var(--accent-primary); text-transform: uppercase; letter-spacing: 0.15em; margin-top: 50px; }
+        
+        .rule-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+
+        .rule-card strong { color: #fb7185; }
+
+        .nav-links {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; }
+        .nav-links a:hover { color: var(--accent-primary); }
+
+        .footer { margin-top: 40px; text-align: center; font-size: 0.7rem; color: #475569; font-family: 'JetBrains Mono', monospace; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="glass-card">
+            <h1 style="margin-bottom: 40px;">The Rules</h1>
+            
+            <p>Accessing my tools is a privilege. By using this ecosystem, you agree to these rules and acknowledge my <a href="privacy.html" style="color: var(--accent-primary); text-decoration: underline;">Privacy Protocol</a>.</p>
+
+            <h2>01. Ethical Intent</h2>
+            <div class="rule-card">
+                My projects are for <strong>Educational Research</strong>. If you use them to facilitate cyber-bullying, fraud, or illegal access, your access will be terminated immediately.
+            </div>
+
+            <h2>02. Accountability</h2>
+            <p>You are solely responsible for how you use my tools. I do not endorse or take responsibility for any illegal application of my software. If your actions result in a criminal investigation, I will cooperate with law enforcement.</p>
+
+            <div class="nav-links">
+                <a href="privacy.html">Privacy Protocol</a>
+                <span style="color: var(--border)">|</span>
+            </div>
+
+            <div class="footer">
+                SHOVITH.DEV // TERMS_OF_SERVICE // 2026
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
