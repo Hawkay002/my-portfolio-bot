@@ -28,20 +28,22 @@
             line-height: 1.7;
         }
 
-        .container { width: 100%; max-width: 680px; padding: 40px 20px; }
+        .container { width: 100%; max-width: 680px; padding: 30px 10px; }
 
         .protocol-card {
             background: var(--card);
             backdrop-filter: blur(30px);
             border: 1px solid var(--border);
             border-radius: 32px;
-            padding: 48px;
+            padding: 20px;
             box-shadow: 0 50px 100px -20px rgba(0,0,0,0.9);
+            justify-content: center !important;
+            text-align: center !important;
         }
 
         .badge {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
+            font-size: 35px;
             color: var(--accent);
             letter-spacing: 1px;
             background: rgba(16, 185, 129, 0.1);
@@ -77,7 +79,7 @@
             margin-bottom: 16px;
         }
 
-        .section-box strong { color: var(--text-h); display: block; margin-bottom: 8px; font-size: 16px; }
+        .section-box strong { color: var(--text-h); margin-bottom: 8px; font-size: 16px; }
 
         .warning-zone {
             background: rgba(244, 63, 94, 0.04);
@@ -132,19 +134,19 @@
         <h1>Privacy.</h1>
         <p class="intro">I'm a developer, not a data broker. Here’s how I handle your info when you use my bots.</p>
 
-        <h2>The Essentials</h2>
+        <h2 style="font-size: 20px !important; ">The Essentials</h2>
         <div class="section-box">
-            <strong>Who you are</strong>
-            I log your <strong>Telegram ID</strong> and <strong>username</strong> so the bot knows who it's talking to. I also need a <strong>phone number</strong> handshake to make sure you're a real person and not a bot trying to spam my server.
+            <strong style="font-size: 22px !important; color: var(--accent); text-decoration: underline; text-underline-offset: 6px;">Who you are</strong>
+            <p>I log your <strong>Telegram ID</strong> and <strong>username</strong> so the bot knows who it's talking to. I also need a <strong>phone number</strong> handshake to make sure you're a real person and not a bot trying to spam my server.</p>
         </div>
 
         <div class="section-box">
-            <strong>Where it goes</strong>
-            Your data stays in my private <strong>Google Firestore</strong> database. I don't sell it, I don't look at it unless I have to, and I purge old session logs regularly.
+            <strong style="font-size: 22px !important; color: var(--accent); text-decoration: underline; text-underline-offset: 6px;">Where it goes</strong>
+            <p>Your data stays in my private <strong>Google Firestore</strong> database. I don't sell it, I don't look at it unless I have to, and I purge old session logs regularly.</p>
         </div>
 
         <div class="warning-zone">
-            <h3>The Hard Reality</h3>
+            <h3 style="font-size: 22px !important; text-decoration: underline; text-underline-offset: 6px; text-align:  center !important; justify-content: center !important; ">The Hard Reality</h3>
             <p>I build these tools for research and learning. If you use them for anything illegal and the law enforcement come to me with a valid legal order, <strong>I will cooperate.</strong></p>
             <p style="margin-top: 12px; opacity: 0.8;">Under <strong>Section 69 of the IT Act, 2000</strong> and <strong>Section 94 of the BNSS, 2023</strong>, I am legally required to help law enforcement if my tools are used in a crime.</p>
         </div>
