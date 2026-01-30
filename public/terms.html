@@ -29,28 +29,30 @@
             line-height: 1.7;
         }
 
-        .container { width: 100%; max-width: 680px; padding: 40px 20px; }
+        .container { width: 100%; max-width: 680px; padding: 30px 10px; }
 
-        .protocol-card {
+       .protocol-card {
             background: var(--card);
             backdrop-filter: blur(30px);
             border: 1px solid var(--border);
             border-radius: 32px;
-            padding: 48px;
+            padding: 20px;
             box-shadow: 0 50px 100px -20px rgba(0,0,0,0.9);
+            justify-content: center !important;
+            text-align: center !important;
         }
 
         .badge {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            color: var(--accent);
-            letter-spacing: 1px;
-            background: rgba(16, 185, 129, 0.1);
-            padding: 6px 12px;
-            border-radius: 6px;
-            display: inline-block;
-            margin-bottom: 24px;
-        }
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 35px;
+    color: var(--accent);
+    letter-spacing: 1px;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: inline-block;
+    margin-bottom: 24px;
+}
 
         h1 {
             font-size: 36px;
@@ -83,7 +85,7 @@
             padding-top: 4px;
         }
 
-        .rule-body strong { color: var(--text-h); display: block; margin-bottom: 6px; font-size: 16px; }
+        .rule-body strong { color: var(--text-h); margin-bottom: 6px; font-size: 16px; }
         .rule-body p { margin: 0; font-size: 15px; }
 
         .nav-bar {
@@ -115,38 +117,36 @@
         <h1>Terms.</h1>
         <p class="intro">Accessing my projects is a privilege, not a right. Here’s the deal.</p>
 
-        <h2>The Ground Rules</h2>
+         <h2 style="font-size: 20px !important; ">The Ground Rules</h2>
         
         <div class="rule-step">
             <span class="rule-num">01</span>
             <div class="rule-body">
-                <strong>Don't be a jerk</strong>
-                I build things for learning and experimentation. If you use my project's code to harass people, hack things you shouldn't, or commit fraud, I'll ban you from the system instantly.
+                <strong style="color: var(--accent);">Don't be a jerk</strong>
+                <p>I build things for learning and experimentation. If you use my code to harass people, hack things you shouldn't, or commit fraud, I'll ban you from the system instantly.</p>
             </div>
         </div>
 
         <div class="rule-step">
             <span class="rule-num">02</span>
-            <div class="rule-step">
             <div class="rule-body">
-                <strong>It's your responsibility</strong>
-                I’m providing these tools "as is." If you break a system or get into legal trouble because of how you used them, that's 100% on you. I don't take any liability for your actions.
+                <strong style="color: var(--accent);">It's your responsibility</strong>
+                <p>I’m providing these tools "as is." If you break a system or get into legal trouble because of how you used them, that's 100% on you. I don't take any liability for your actions.</p>
             </div>
         </div>
 
         <div class="rule-step">
             <span class="rule-num">03</span>
             <div class="rule-body">
-                <strong>Respect the Law</strong>
-                As I mentioned in my Privacy Protocol, I value the law over your anonymity if you're caught doing something illegal. Don't make me have to hand your info to the law enforcement.
+                <strong style="color: var(--accent);">Respect the Law</strong>
+                <p>As I mentioned in my Privacy Protocol, I value the law over your anonymity if you're caught doing something illegal. Don't make me have to hand your info to the police.</p>
             </div>
         </div>
-
-        <div class="nav-bar">
-            <a href="privacy.html">Privacy</a>
-            <a href="#" class="active">Terms</a>
-        </div>
     </div>
+    <div class="nav-bar">
+    <a href="privacy.html">Privacy</a>
+    <a href="#" class="active">Terms</a>
+</div>
 </div>
 
 </body>
