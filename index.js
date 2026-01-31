@@ -12,7 +12,6 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 
 // A. Serve Static Files (Makes public/privacy.html accessible)
-// This is critical for the BotFather privacy link
 app.use(express.static(path.join(__dirname, 'public')));
 
 // B. Root Route (Fallback/Uptime Check)
@@ -49,9 +48,20 @@ try {
 const db = admin.firestore();
 const bot = new Telegraf(BOT_TOKEN);
 
-// --- 4. HELPER: Generate 6-Digit OTP ---
+// --- 4. HELPERS ---
+
+// A. Generate 6-Digit OTP
 function generateOTP() {
   return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// B. Calculate Uptime (Hours/Minutes/Seconds)
+function getUptime() {
+  const uptime = process.uptime();
+  const hours = Math.floor(uptime / 3600);
+  const minutes = Math.floor((uptime % 3600) / 60);
+  const seconds = Math.floor(uptime % 60);
+  return `${hours}h ${minutes}m ${seconds}s`;
 }
 
 // --- 5. BOT LOGIC ---
@@ -143,6 +153,58 @@ bot.on('contact', async (ctx) => {
   } catch (error) {
     console.error("❌ Contact Error:", error);
     ctx.reply("⚠️ Error processing contact. Try again.");
+  }
+});
+
+// C. HANDLE /admin_socials COMMAND
+bot.command('admin_socials', (ctx) => {
+  ctx.reply(
+    "📞 *Contact Admin*\n\nTap the buttons below to reach out on social media:",
+    {
+      parse_mode: 'Markdown',
+      ...Markup.inlineKeyboard([
+        // TODO: Replace with your actual links below
+        [Markup.button.url('WhatsApp', 'https://wa.me/918777845713')], 
+        [Markup.button.url('Telegram', 'https://t.me/X_o_x_o_002)]   
+      ])
+    }
+  );
+});
+
+// D. HANDLE /info COMMAND
+bot.command('info', async (ctx) => {
+  try {
+    const botInfo = await ctx.telegram.getMe();
+    
+    // You can change this to your own logo URL
+    const botLogoUrl = 'https://raw.githubusercontent.com/Hawkay002/my-portfolio-bot/main/IMG_20260131_132820_711.jpg'; 
+
+    // We use HTML parse_mode here to support the <blockquote> tag
+    const infoMessage = `
+<b>🤖 Bot Identity</b>
+
+<blockquote><b>Name:</b> ${botInfo.first_name}
+<b>Username:</b> @${botInfo.username}
+<b>Bot ID:</b> <code>${botInfo.id}</code></blockquote>
+
+<blockquote><b>👤 Creator:</b> Shovith (Sid)
+<b>⏱ Uptime:</b> ${getUptime()}
+<b>🛠 Language:</b> Node.js
+<b>📚 Library:</b> Telegraf.js
+<b>🔥 Database:</b> Firebase Firestore
+<b>☁️ Hosting:</b> Render</blockquote>
+
+<i>© 2026 ${botInfo.first_name}. All rights reserved.</i>
+`;
+
+    await ctx.replyWithPhoto(botLogoUrl, {
+      caption: infoMessage,
+      parse_mode: 'HTML' // Critical for the quote to work
+    });
+
+  } catch (error) {
+    console.error("❌ Info Command Error:", error);
+    ctx.reply("⚠️ Could not fetch bot info.");
   }
 });
 
