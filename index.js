@@ -163,9 +163,9 @@ bot.command('admin_socials', (ctx) => {
     {
       parse_mode: 'Markdown',
       ...Markup.inlineKeyboard([
-        // TODO: Replace with your actual links below
+        // UPDATED with your specific contact details
         [Markup.button.url('WhatsApp', 'https://wa.me/918777845713')], 
-        [Markup.button.url('Telegram', 'https://t.me/X_o_x_o_002)]   
+        [Markup.button.url('Telegram', 'https://t.me/X_o_x_o_002')]   
       ])
     }
   );
