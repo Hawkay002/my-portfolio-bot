@@ -176,17 +176,15 @@ bot.command('info', async (ctx) => {
   try {
     const botInfo = await ctx.telegram.getMe();
     
-    // 1. Fetch bot's profile photos (limit 1 to get the most recent)
+    // 1. Fetch bot's profile photos
     const photos = await ctx.telegram.getUserProfilePhotos(botInfo.id, 0, 1);
     
-    // 2. Check if the bot has a profile picture
+    // 2. Check if a photo exists, otherwise use fallback
     let photoSource;
     if (photos.total_count > 0) {
-      // Get the largest size available (last element in the array)
       const lastPhotoArray = photos.photos[0];
       photoSource = lastPhotoArray[lastPhotoArray.length - 1].file_id;
     } else {
-      // Fallback if no profile picture is set
       photoSource = 'https://raw.githubusercontent.com/Hawkay002/my-portfolio-bot/main/IMG_20260131_132820_711.jpg';
     }
 
@@ -197,8 +195,10 @@ bot.command('info', async (ctx) => {
 <b>Username:</b> @${botInfo.username}
 <b>Bot ID:</b> <code>${botInfo.id}</code></blockquote>
 
+<b>⚙️ Bot Infrastructure</b>
+
 <blockquote><b>👤 Creator:</b> Shovith (Sid)
-<b>⏱ Uptime:</b> ${getUptime()}
+<b>⏱ Uptime:</b> ${getUptime()} । Uptimerobot.com
 <b>🛠 Language:</b> Node.js
 <b>📚 Library:</b> Telegraf.js
 <b>🔥 Database:</b> Firebase Firestore
@@ -207,7 +207,6 @@ bot.command('info', async (ctx) => {
 <i>© 2026 ${botInfo.first_name}. All rights reserved.</i>
 `;
 
-    // 3. Send the photo using the file_id (no manual link needed!)
     await ctx.replyWithPhoto(photoSource, {
       caption: infoMessage,
       parse_mode: 'HTML'
