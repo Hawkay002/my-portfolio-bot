@@ -176,10 +176,20 @@ bot.command('info', async (ctx) => {
   try {
     const botInfo = await ctx.telegram.getMe();
     
-    // You can change this to your own logo URL
-    const botLogoUrl = 'https://raw.githubusercontent.com/Hawkay002/my-portfolio-bot/main/IMG_20260131_132820_711.jpg'; 
+    // 1. Fetch bot's profile photos (limit 1 to get the most recent)
+    const photos = await ctx.telegram.getUserProfilePhotos(botInfo.id, 0, 1);
+    
+    // 2. Check if the bot has a profile picture
+    let photoSource;
+    if (photos.total_count > 0) {
+      // Get the largest size available (last element in the array)
+      const lastPhotoArray = photos.photos[0];
+      photoSource = lastPhotoArray[lastPhotoArray.length - 1].file_id;
+    } else {
+      // Fallback if no profile picture is set
+      photoSource = 'https://raw.githubusercontent.com/Hawkay002/my-portfolio-bot/main/IMG_20260131_132820_711.jpg';
+    }
 
-    // We use HTML parse_mode here to support the <blockquote> tag
     const infoMessage = `
 <b>🤖 Bot Identity</b>
 
@@ -197,9 +207,10 @@ bot.command('info', async (ctx) => {
 <i>© 2026 ${botInfo.first_name}. All rights reserved.</i>
 `;
 
-    await ctx.replyWithPhoto(botLogoUrl, {
+    // 3. Send the photo using the file_id (no manual link needed!)
+    await ctx.replyWithPhoto(photoSource, {
       caption: infoMessage,
-      parse_mode: 'HTML' // Critical for the quote to work
+      parse_mode: 'HTML'
     });
 
   } catch (error) {
