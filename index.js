@@ -277,10 +277,14 @@ bot.command('info', async (ctx) => {
 
     const infoMessage = `
 <b>🤖 Bot Identity</b>
+
 <blockquote><b>Name:</b> ${botInfo.first_name}
 <b>Username:</b> @${botInfo.username}
 <b>Bot ID:</b> <code>${botInfo.id}</code></blockquote>
+
+
 <b>⚙️ Bot Infrastructure</b>
+
 <blockquote><b>👤 Creator:</b> Shovith (Sid)
 <b>⏱ Uptime:</b> ${getUptime()} । Uptimerobot.com
 <b>🛠 Language:</b> Node.js
