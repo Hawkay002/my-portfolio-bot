@@ -11,16 +11,12 @@ const ADMIN_ID = 1299129410; // Your Chat ID
 
 // --- 2. WEB SERVER (Privacy Policy + Uptime) ---
 const app = express();
-
-// A. Serve Static Files (Makes public/privacy.html accessible)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// B. Root Route (Fallback/Uptime Check)
 app.get('/', (req, res) => {
   res.send('Bot is running securely. Go to /privacy.html to view the policy.');
 });
 
-// C. Direct Route
 app.get('/privacy', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
 });
@@ -68,6 +64,35 @@ function getUptime() {
   return `${hours}h ${minutes}m ${seconds}s`;
 }
 
+// Fetch available codes for the admin list
+async function fetchAvailableCodes() {
+  try {
+    const snapshot = await db.collection('access_codes')
+      .where('isUsed', '==', false)
+      .orderBy('resourceName')
+      .get();
+
+    if (snapshot.empty) return "📭 No available codes found in the database.";
+
+    let message = "📋 *Available Resource Codes*\n\n";
+    let currentResource = "";
+
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      if (currentResource !== data.resourceName) {
+        currentResource = data.resourceName;
+        message += `\n📂 *${currentResource}*\n`;
+      }
+      message += `• \`${data.code}\`\n`;
+    });
+
+    return message;
+  } catch (error) {
+    console.error("❌ fetchAvailableCodes DB Error:", error);
+    throw error; 
+  }
+}
+
 // --- 5. BOT LOGIC ---
 
 // A. HANDLE /start COMMAND
@@ -102,7 +127,47 @@ bot.start(async (ctx) => {
   }
 });
 
-// B. HANDLE /addcodes (ADMIN ONLY)
+// B. GETCODES COMMAND (Admin Only with Logging)
+bot.command('getcodes', async (ctx) => {
+  console.log(`🔍 Received /getcodes from ID: ${ctx.from.id}`);
+
+  if (ctx.from.id !== ADMIN_ID) {
+    console.warn(`⛔ Unauthorized access attempt by ID: ${ctx.from.id}`);
+    return ctx.reply("⛔ Unauthorized.");
+  }
+
+  try {
+    const message = await fetchAvailableCodes();
+    await ctx.reply(message, {
+      parse_mode: 'Markdown',
+      ...Markup.inlineKeyboard([
+        [Markup.button.callback('🔄 Refresh List', 'refresh_codes_list')]
+      ])
+    });
+  } catch (err) {
+    console.error("❌ Command Execution Error:", err.message);
+    ctx.reply("⚠️ Failed to fetch codes. Check Render logs for details.");
+  }
+});
+
+bot.action('refresh_codes_list', async (ctx) => {
+  if (ctx.from.id !== ADMIN_ID) return ctx.answerCbQuery("Unauthorized.");
+
+  try {
+    const message = await fetchAvailableCodes();
+    await ctx.editMessageText(message, {
+      parse_mode: 'Markdown',
+      ...Markup.inlineKeyboard([
+        [Markup.button.callback('🔄 Refresh List', 'refresh_codes_list')]
+      ])
+    });
+    await ctx.answerCbQuery("List Refreshed! ✨");
+  } catch (e) {
+    await ctx.answerCbQuery("No changes found or Error.");
+  }
+});
+
+// C. ADDCODES COMMAND (Admin Only)
 bot.command('addcodes', (ctx) => {
   if (ctx.from.id !== ADMIN_ID) return ctx.reply("⛔ Unauthorized.");
   
@@ -110,7 +175,7 @@ bot.command('addcodes', (ctx) => {
   ctx.reply("🔢 How many codes would you like to generate? (1-50)");
 });
 
-// C. MULTI-STEP TEXT HANDLER
+// D. MULTI-STEP TEXT HANDLER
 bot.on('text', async (ctx, next) => {
   const session = addCodeSessions.get(ctx.from.id);
   if (!session) return next();
@@ -153,7 +218,7 @@ bot.on('text', async (ctx, next) => {
   }
 });
 
-// D. CALLBACK ACTIONS
+// E. CALLBACK ACTIONS
 bot.action('confirm_add', async (ctx) => {
   const session = addCodeSessions.get(ctx.from.id);
   if (!session) return ctx.answerCbQuery("Session Expired.");
@@ -202,7 +267,7 @@ bot.action('cancel_add', (ctx) => {
   ctx.editMessageText("❌ Cancelled.");
 });
 
-// E. HANDLE CONTACT SHARING
+// F. HANDLE CONTACT SHARING & OTP
 bot.on('contact', async (ctx) => {
   const user = ctx.from;
   const contact = ctx.message.contact;
@@ -233,47 +298,32 @@ bot.on('contact', async (ctx) => {
     });
 
     await pendingDocRef.delete();
-
-    await ctx.reply(
-      `✅ *Verification Successful*\n\nYour code is:\n\`${otp}\`\n\n(Tap to copy)`,
-      { 
-        parse_mode: 'Markdown',
-        ...Markup.removeKeyboard() 
-      }
-    );
+    await ctx.reply(`✅ *Verification Successful*\n\nYour code is:\n\`${otp}\`\n\n(Tap to copy)`, { 
+      parse_mode: 'Markdown',
+      ...Markup.removeKeyboard() 
+    });
   } catch (error) {
     console.error("❌ Contact Error:", error);
-    ctx.reply("⚠️ Error processing contact. Try again.");
+    ctx.reply("⚠️ Error processing contact.");
   }
 });
 
-// F. HANDLE /admin_socials COMMAND
+// G. HANDLE /admin_socials & /info
 bot.command('admin_socials', (ctx) => {
-  ctx.reply(
-    "📞 *Contact Admin*\n\nTap the buttons below to reach out on social media:",
-    {
-      parse_mode: 'Markdown',
-      ...Markup.inlineKeyboard([
-        [Markup.button.url('WhatsApp', 'https://wa.me/918777845713')], 
-        [Markup.button.url('Telegram', 'https://t.me/X_o_x_o_002')]   
-      ])
-    }
-  );
+  ctx.reply("📞 *Contact Admin*", {
+    parse_mode: 'Markdown',
+    ...Markup.inlineKeyboard([
+      [Markup.button.url('WhatsApp', 'https://wa.me/918777845713')], 
+      [Markup.button.url('Telegram', 'https://t.me/X_o_x_o_002')]   
+    ])
+  });
 });
 
-// G. HANDLE /info COMMAND
 bot.command('info', async (ctx) => {
   try {
     const botInfo = await ctx.telegram.getMe();
     const photos = await ctx.telegram.getUserProfilePhotos(botInfo.id, 0, 1);
-    
-    let photoSource;
-    if (photos.total_count > 0) {
-      const lastPhotoArray = photos.photos[0];
-      photoSource = lastPhotoArray[lastPhotoArray.length - 1].file_id;
-    } else {
-      photoSource = 'https://raw.githubusercontent.com/Hawkay002/my-portfolio-bot/main/IMG_20260131_132820_711.jpg';
-    }
+    let photoSource = (photos.total_count > 0) ? photos.photos[0][photos.photos[0].length - 1].file_id : 'https://raw.githubusercontent.com/Hawkay002/my-portfolio-bot/main/IMG_20260131_132820_711.jpg';
 
     const infoMessage = `
 <b>🤖 Bot Identity</b>
@@ -291,14 +341,9 @@ bot.command('info', async (ctx) => {
 <b>📚 Library:</b> Telegraf.js
 <b>🔥 Database:</b> Firebase Firestore
 <b>☁️ Hosting:</b> Render</blockquote>
-<i>© 2026 ${botInfo.first_name}. All rights reserved.</i>
-`;
+<i>© 2026 ${botInfo.first_name}. All rights reserved.</i>`;
 
-    await ctx.replyWithPhoto(photoSource, {
-      caption: infoMessage,
-      parse_mode: 'HTML'
-    });
-
+    await ctx.replyWithPhoto(photoSource, { caption: infoMessage, parse_mode: 'HTML' });
   } catch (error) {
     console.error("❌ Info Command Error:", error);
     ctx.reply("⚠️ Could not fetch bot info.");
