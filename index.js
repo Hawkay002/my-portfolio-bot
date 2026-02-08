@@ -11,10 +11,18 @@ const ADMIN_ID = 1299129410; // Your Chat ID
 
 // --- 2. WEB SERVER (Privacy Policy + Uptime) ---
 const app = express();
+
+// A. Serve Static Files (Makes public/privacy.html accessible)
 app.use(express.static(path.join(__dirname, 'public')));
 
+// B. Root Route (Fallback/Uptime Check)
 app.get('/', (req, res) => {
   res.send('Bot is running securely. Go to /privacy.html to view the policy.');
+});
+
+// C. Direct Route
+app.get('/privacy', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
 });
 
 app.listen(PORT, () => {
@@ -23,7 +31,7 @@ app.listen(PORT, () => {
 
 // --- 3. FIREBASE INITIALIZATION ---
 if (!BOT_TOKEN || !SERVICE_ACCOUNT) {
-  console.error("❌ CRITICAL ERROR: Missing 'BOT_TOKEN' or 'FIREBASE_SERVICE_ACCOUNT' Env Vars.");
+  console.error("❌ CRITICAL ERROR: Missing Env Vars.");
   process.exit(1);
 }
 
@@ -67,6 +75,8 @@ bot.start(async (ctx) => {
   const sessionId = ctx.startPayload; 
   const user = ctx.from;
 
+  console.log(`📩 Start Request from: ${user.first_name} (ID: ${user.id})`);
+
   if (!sessionId) {
     return ctx.reply("👋 Welcome! Please go to the website and click 'Verify via Telegram' to start.");
   }
@@ -97,7 +107,7 @@ bot.command('addcodes', (ctx) => {
   if (ctx.from.id !== ADMIN_ID) return ctx.reply("⛔ Unauthorized.");
   
   addCodeSessions.set(ctx.from.id, { step: 'ASK_COUNT' });
-  ctx.reply("🔢 How many codes would you like to generate? (Enter a number 1-50)");
+  ctx.reply("🔢 How many codes would you like to generate? (1-50)");
 });
 
 // C. MULTI-STEP TEXT HANDLER
@@ -192,7 +202,7 @@ bot.action('cancel_add', (ctx) => {
   ctx.editMessageText("❌ Cancelled.");
 });
 
-// E. CONTACT SHARING & OTP
+// E. HANDLE CONTACT SHARING
 bot.on('contact', async (ctx) => {
   const user = ctx.from;
   const contact = ctx.message.contact;
@@ -206,7 +216,7 @@ bot.on('contact', async (ctx) => {
     const pendingDoc = await pendingDocRef.get();
 
     if (!pendingDoc.exists) {
-      return ctx.reply("⚠️ Session expired.", Markup.removeKeyboard());
+      return ctx.reply("⚠️ Session expired. Please click 'Verify via Telegram' on the website again.", Markup.removeKeyboard());
     }
 
     const sessionId = pendingDoc.data().session_id;
@@ -223,42 +233,71 @@ bot.on('contact', async (ctx) => {
     });
 
     await pendingDocRef.delete();
-    await ctx.reply(`✅ *Verification Successful*\n\nYour code is:\n\`${otp}\``, { 
-      parse_mode: 'Markdown',
-      ...Markup.removeKeyboard() 
-    });
+
+    await ctx.reply(
+      `✅ *Verification Successful*\n\nYour code is:\n\`${otp}\`\n\n(Tap to copy)`,
+      { 
+        parse_mode: 'Markdown',
+        ...Markup.removeKeyboard() 
+      }
+    );
   } catch (error) {
     console.error("❌ Contact Error:", error);
-    ctx.reply("⚠️ Error processing contact.");
+    ctx.reply("⚠️ Error processing contact. Try again.");
   }
 });
 
-// F. OTHER COMMANDS
+// F. HANDLE /admin_socials COMMAND
 bot.command('admin_socials', (ctx) => {
-  ctx.reply("📞 *Contact Admin*", {
-    parse_mode: 'Markdown',
-    ...Markup.inlineKeyboard([
-      [Markup.button.url('WhatsApp', 'https://wa.me/918777845713')], 
-      [Markup.button.url('Telegram', 'https://t.me/X_o_x_o_002')]   
-    ])
-  });
+  ctx.reply(
+    "📞 *Contact Admin*\n\nTap the buttons below to reach out on social media:",
+    {
+      parse_mode: 'Markdown',
+      ...Markup.inlineKeyboard([
+        [Markup.button.url('WhatsApp', 'https://wa.me/918777845713')], 
+        [Markup.button.url('Telegram', 'https://t.me/X_o_x_o_002')]   
+      ])
+    }
+  );
 });
 
+// G. HANDLE /info COMMAND
 bot.command('info', async (ctx) => {
   try {
     const botInfo = await ctx.telegram.getMe();
     const photos = await ctx.telegram.getUserProfilePhotos(botInfo.id, 0, 1);
-    const photoSource = photos.total_count > 0 ? photos.photos[0][photos.photos[0].length - 1].file_id : 'https://raw.githubusercontent.com/Hawkay002/my-portfolio-bot/main/IMG_20260131_132820_711.jpg';
+    
+    let photoSource;
+    if (photos.total_count > 0) {
+      const lastPhotoArray = photos.photos[0];
+      photoSource = lastPhotoArray[lastPhotoArray.length - 1].file_id;
+    } else {
+      photoSource = 'https://raw.githubusercontent.com/Hawkay002/my-portfolio-bot/main/IMG_20260131_132820_711.jpg';
+    }
 
     const infoMessage = `
 <b>🤖 Bot Identity</b>
-<blockquote><b>Name:</b> ${botInfo.first_name}\n<b>Username:</b> @${botInfo.username}\n<b>Bot ID:</b> <code>${botInfo.id}</code></blockquote>
+<blockquote><b>Name:</b> ${botInfo.first_name}
+<b>Username:</b> @${botInfo.username}
+<b>Bot ID:</b> <code>${botInfo.id}</code></blockquote>
 <b>⚙️ Bot Infrastructure</b>
-<blockquote><b>👤 Creator:</b> Shovith\n<b>⏱ Uptime:</b> ${getUptime()}\n<b>🔥 Database:</b> Firestore</blockquote>
+<blockquote><b>👤 Creator:</b> Shovith (Sid)
+<b>⏱ Uptime:</b> ${getUptime()} । Uptimerobot.com
+<b>🛠 Language:</b> Node.js
+<b>📚 Library:</b> Telegraf.js
+<b>🔥 Database:</b> Firebase Firestore
+<b>☁️ Hosting:</b> Render</blockquote>
+<i>© 2026 ${botInfo.first_name}. All rights reserved.</i>
 `;
-    await ctx.replyWithPhoto(photoSource, { caption: infoMessage, parse_mode: 'HTML' });
-  } catch (e) {
-    ctx.reply("⚠️ Could not fetch info.");
+
+    await ctx.replyWithPhoto(photoSource, {
+      caption: infoMessage,
+      parse_mode: 'HTML'
+    });
+
+  } catch (error) {
+    console.error("❌ Info Command Error:", error);
+    ctx.reply("⚠️ Could not fetch bot info.");
   }
 });
 
