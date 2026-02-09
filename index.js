@@ -127,7 +127,7 @@ bot.start(async (ctx) => {
   }
 });
 
-// B. GETCODES COMMAND (Admin Only with Logging)
+// B. GETCODES COMMAND (Admin Only)
 bot.command('getcodes', async (ctx) => {
   console.log(`🔍 Received /getcodes from ID: ${ctx.from.id}`);
 
@@ -164,6 +164,36 @@ bot.action('refresh_codes_list', async (ctx) => {
     await ctx.answerCbQuery("List Refreshed! ✨");
   } catch (e) {
     await ctx.answerCbQuery("No changes found or Error.");
+  }
+});
+
+// --- NEW: DELETECODES COMMAND (Admin Only) ---
+bot.command('deletecodes', async (ctx) => {
+  if (ctx.from.id !== ADMIN_ID) return ctx.reply("⛔ Unauthorized.");
+
+  try {
+    const snapshot = await db.collection('access_codes')
+      .where('isUsed', '==', true)
+      .get();
+
+    if (snapshot.empty) {
+      return ctx.reply("✨ Database is already clean! No used codes found.");
+    }
+
+    const count = snapshot.size;
+    
+    // Use batch for efficient deletion
+    const batch = db.batch();
+    snapshot.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+
+    await batch.commit();
+    ctx.reply(`✅ Successfully deleted ${count} used codes from the database.`);
+    console.log(`🗑️ Admin ${ctx.from.id} deleted ${count} used codes.`);
+  } catch (error) {
+    console.error("❌ Delete Error:", error);
+    ctx.reply("⚠️ Error occurred while deleting used codes.");
   }
 });
 
@@ -310,7 +340,7 @@ bot.on('contact', async (ctx) => {
 
 // G. HANDLE /admin_socials & /info
 bot.command('admin_socials', (ctx) => {
-  ctx.reply("📞 *Contact Admin*", {
+  ctx.reply("📞 *Contact Admin* via these social media platforms.", {
     parse_mode: 'Markdown',
     ...Markup.inlineKeyboard([
       [Markup.button.url('WhatsApp', 'https://wa.me/918777845713')], 
@@ -327,14 +357,11 @@ bot.command('info', async (ctx) => {
 
     const infoMessage = `
 <b>🤖 Bot Identity</b>
-
 <blockquote><b>Name:</b> ${botInfo.first_name}
 <b>Username:</b> @${botInfo.username}
 <b>Bot ID:</b> <code>${botInfo.id}</code></blockquote>
 
-
 <b>⚙️ Bot Infrastructure</b>
-
 <blockquote><b>👤 Creator:</b> Shovith (Sid)
 <b>⏱ Uptime:</b> ${getUptime()} । Uptimerobot.com
 <b>🛠 Language:</b> Node.js
